@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>おみくじアプリ</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: "Hiragino Mincho ProN", serif;
+  background: linear-gradient(135deg, #f5e6ca, #e0c3a3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.container {
+  text-align: center;
+  background: #fff8f0;
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  width: 320px;
+}
+
+button {
+  background: #c0392b;
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  font-size: 18px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 20px;
+  font-size: 34px;
+  font-weight: bold;
+}
+
+.message {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #555;
+}
+
+/* ガチャ演出 */
+.shuffle {
+  animation: shuffle 0.1s infinite;
+}
+
+@keyframes shuffle {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  50% { transform: rotate(-5deg); }
+  75% { transform: rotate(3deg); }
+  100% { transform: rotate(0deg); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🎍 おみくじ 🎍</h1>
+  <button onclick="drawOmikuji()">引く！</button>
+
+  <div id="result" class="result"></div>
+  <div id="message" class="message"></div>
+</div>
+
+<script>
+function getTodayKey() {
+  const d = new Date();
+  return d.getFullYear() + "-" + (d.getMonth()+1) + "-" + d.getDate();
+}
+
+const omikujiData = {
+  "大吉": [
+    "最高の一日！何事もうまくいく！",
+    "運気MAX！挑戦すると成功する！",
+    "神が味方している日！"
+  ],
+  "中吉": [
+    "良い流れ。焦らず進もう！",
+    "努力が実る日。",
+    "バランスが大事！"
+  ],
+  "小吉": [
+    "小さな幸せを大切に。",
+    "慎重にいけばOK。",
+    "コツコツが吉。"
+  ],
+  "吉": [
+    "安定した一日。",
+    "平和な日になりそう。",
+    "無理せず行こう。"
+  ],
+  "末吉": [
+    "後半に運気アップ！",
+    "最初は慎重に。",
+    "後でいいことがある！"
+  ],
+  "凶": [
+    "今日は慎重に行動しよう。",
+    "無理は禁物。",
+    "落ち着いて過ごそう。"
+  ],
+  "大凶": [
+    "今日は休むのが正解。",
+    "無理せず静かに過ごそう。",
+    "慎重に慎重を重ねよう。"
+  ]
+};
+
+const colors = {
+  "大吉": "gold",
+  "中吉": "orange",
+  "小吉": "green",
+  "吉": "blue",
+  "末吉": "purple",
+  "凶": "gray",
+  "大凶": "black"
+};
+
+function drawOmikuji() {
+  const todayKey = getTodayKey();
+
+  if (localStorage.getItem("omikujiDate") === todayKey) {
+    const saved = JSON.parse(localStorage.getItem("omikujiResult"));
+    displayResult(saved);
+    alert("今日はもう引いています！");
+    return;
+  }
+
+  const resultEl = document.getElementById("result");
+  const messageEl = document.getElementById("message");
+
+  // ガチャ演出開始
+  resultEl.classList.add("shuffle");
+  resultEl.textContent = "・・・";
+  messageEl.textContent = "";
+
+  setTimeout(() => {
+    const keys = Object.keys(omikujiData);
+    const luck = keys[Math.floor(Math.random() * keys.length)];
+
+    const messages = omikujiData[luck];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+
+    const result = { luck, message };
+
+    localStorage.setItem("omikujiDate", todayKey);
+    localStorage.setItem("omikujiResult", JSON.stringify(result));
+
+    resultEl.classList.remove("shuffle");
+
+    displayResult(result);
+  }, 1500); // ←演出時間
+}
+
+function displayResult(result) {
+  const resultEl = document.getElementById("result");
+  const messageEl = document.getElementById("message");
+
+  resultEl.textContent = result.luck;
+  messageEl.textContent = result.message;
+
+  resultEl.style.color = colors[result.luck];
+}
+
+window.onload = function() {
+  const todayKey = getTodayKey();
+  if (localStorage.getItem("omikujiDate") === todayKey) {
+    const saved = JSON.parse(localStorage.getItem("omikujiResult"));
+    displayResult(saved);
+  }
+};
+</script>
+
+</body>
+</html>
